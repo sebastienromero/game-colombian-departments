@@ -1,7 +1,42 @@
-# game-colombian-departments
+# 🇨🇴 game-colombian-departments
 A game to learn the colombian departments and their capital cities.
 
 **Objectif :** apprendre les départements et les capitales des départements de Colombie.
+
+---
+
+## 🛠️ Stack technique
+
+- **React + Vite** (JavaScript)
+- **Responsive / mobile-first** (optimisé pour smartphone)
+- **localStorage** pour la sauvegarde de la progression et l'historique des scores
+- **Déploiement** : GitHub Pages
+
+---
+
+## 🌐 Langue
+
+- Interface entièrement en **français**
+- Noms des départements et capitales en **espagnol**
+- Les réponses sont **strictes** : l'orthographe exacte est requise (accents inclus)
+
+---
+
+## 🚀 Installation
+
+```bash
+git clone https://github.com/sebastienromero/game-colombian-departments.git
+cd game-colombian-departments
+npm install
+npm run dev
+```
+
+## 📦 Déploiement (GitHub Pages)
+
+```bash
+npm run build
+npm run deploy
+```
 
 ---
 
