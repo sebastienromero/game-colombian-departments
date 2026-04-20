@@ -355,6 +355,18 @@
   color: #b91c1c;
 }
 
+.mode-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.mode-button {
+  padding: 20px;
+  border-radius: 18px;
+  font-size: 1.05rem;
+}
+
 @media (max-width: 720px) {
   .options-grid {
     grid-template-columns: 1fr;
@@ -364,4 +376,68 @@
     flex-direction: column;
     align-items: flex-start;
   }
+
+  .mode-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.map-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.map-cell {
+  padding: 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 16px;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 700;
+  color: #111827;
+}
+
+.form-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.form-grid label {
+  display: grid;
+  gap: 8px;
+  text-align: left;
+}
+
+.form-grid input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 14px;
+  font-size: 1rem;
+}
+
+.feedback.green {
+  color: #166534;
+  background: #dcfce7;
+  padding: 14px;
+  border-radius: 14px;
+}
+
+.feedback.yellow {
+  color: #78350f;
+  background: #fef3c7;
+  padding: 14px;
+  border-radius: 14px;
+}
+
+.feedback.red {
+  color: #991b1b;
+  background: #fee2e2;
+  padding: 14px;
+  border-radius: 14px;
 }
