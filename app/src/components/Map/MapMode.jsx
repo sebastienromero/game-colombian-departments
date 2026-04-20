@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import mapSvg from '../../assets/colombia-departamentos.svg'
 import departments from '../../data/departments.json'
 
 const getRandomDepartment = (statusMap) => {
@@ -67,6 +68,14 @@ function MapMode({ onBack }) {
         <div className="quiz-top">
           <div>{current ? `Département aléatoire : ${current.nom}` : 'Tous les départements sont verts !'}</div>
           <div>Validés : {score} / 32</div>
+        </div>
+
+        <div className="svg-wrapper">
+          <img
+            className="map-svg"
+            src={mapSvg}
+            alt="Carte des départements de Colombie"
+          />
         </div>
 
         <div className="map-grid">
