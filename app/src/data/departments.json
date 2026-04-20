@@ -1,0 +1,200 @@
+[
+  {
+    "id": "amazonas",
+    "nom": "Amazonas",
+    "capitale": "Leticia",
+    "region": "Amazónica"
+  },
+  {
+    "id": "antioquia",
+    "nom": "Antioquia",
+    "capitale": "Medellín",
+    "region": "Andina"
+  },
+  {
+    "id": "arauca",
+    "nom": "Arauca",
+    "capitale": "Arauca",
+    "region": "Orinoquía"
+  },
+  {
+    "id": "atlantico",
+    "nom": "Atlántico",
+    "capitale": "Barranquilla",
+    "region": "Caribe"
+  },
+  {
+    "id": "bolivar",
+    "nom": "Bolívar",
+    "capitale": "Cartagena de Indias",
+    "region": "Caribe"
+  },
+  {
+    "id": "boyaca",
+    "nom": "Boyacá",
+    "capitale": "Tunja",
+    "region": "Andina"
+  },
+  {
+    "id": "caldas",
+    "nom": "Caldas",
+    "capitale": "Manizales",
+    "region": "Andina"
+  },
+  {
+    "id": "caqueta",
+    "nom": "Caquetá",
+    "capitale": "Florencia",
+    "region": "Amazónica"
+  },
+  {
+    "id": "casanare",
+    "nom": "Casanare",
+    "capitale": "Yopal",
+    "region": "Orinoquía"
+  },
+  {
+    "id": "cauca",
+    "nom": "Cauca",
+    "capitale": "Popayán",
+    "region": "Pacífica"
+  },
+  {
+    "id": "cesar",
+    "nom": "Cesar",
+    "capitale": "Valledupar",
+    "region": "Caribe"
+  },
+  {
+    "id": "choco",
+    "nom": "Chocó",
+    "capitale": "Quibdó",
+    "region": "Pacífica"
+  },
+  {
+    "id": "cordoba",
+    "nom": "Córdoba",
+    "capitale": "Montería",
+    "region": "Caribe"
+  },
+  {
+    "id": "cundinamarca",
+    "nom": "Cundinamarca",
+    "capitale": "Bogotá",
+    "region": "Andina"
+  },
+  {
+    "id": "guainia",
+    "nom": "Guainía",
+    "capitale": "Inírida",
+    "region": "Amazónica"
+  },
+  {
+    "id": "guaviare",
+    "nom": "Guaviare",
+    "capitale": "San José del Guaviare",
+    "region": "Amazónica"
+  },
+  {
+    "id": "huila",
+    "nom": "Huila",
+    "capitale": "Neiva",
+    "region": "Andina"
+  },
+  {
+    "id": "la_guajira",
+    "nom": "La Guajira",
+    "capitale": "Riohacha",
+    "region": "Caribe"
+  },
+  {
+    "id": "magdalena",
+    "nom": "Magdalena",
+    "capitale": "Santa Marta",
+    "region": "Caribe"
+  },
+  {
+    "id": "meta",
+    "nom": "Meta",
+    "capitale": "Villavicencio",
+    "region": "Orinoquía"
+  },
+  {
+    "id": "narino",
+    "nom": "Nariño",
+    "capitale": "Pasto",
+    "region": "Pacífica"
+  },
+  {
+    "id": "norte_de_santander",
+    "nom": "Norte de Santander",
+    "capitale": "Cúcuta",
+    "region": "Andina"
+  },
+  {
+    "id": "putumayo",
+    "nom": "Putumayo",
+    "capitale": "Mocoa",
+    "region": "Amazónica"
+  },
+  {
+    "id": "quindio",
+    "nom": "Quindío",
+    "capitale": "Armenia",
+    "region": "Andina"
+  },
+  {
+    "id": "risaralda",
+    "nom": "Risaralda",
+    "capitale": "Pereira",
+    "region": "Andina"
+  },
+  {
+    "id": "san_andres",
+    "nom": "San Andrés y Providencia",
+    "capitale": "San Andrés",
+    "region": "Caribe"
+  },
+  {
+    "id": "santander",
+    "nom": "Santander",
+    "capitale": "Bucaramanga",
+    "region": "Andina"
+  },
+  {
+    "id": "sucre",
+    "nom": "Sucre",
+    "capitale": "Sincelejo",
+    "region": "Caribe"
+  },
+  {
+    "id": "tolima",
+    "nom": "Tolima",
+    "capitale": "Ibagué",
+    "region": "Andina"
+  },
+  {
+    "id": "valle_del_cauca",
+    "nom": "Valle del Cauca",
+    "capitale": "Cali",
+    "region": "Pacífica"
+  },
+  {
+    "id": "vaupes",
+    "nom": "Vaupés",
+    "capitale": "Mitú",
+    "region": "Amazónica"
+  },
+  {
+    "id": "vichada",
+    "nom": "Vichada",
+    "capitale": "Puerto Carreño",
+    "region": "Orinoquía"
+  },
+  {
+    "id": "bogota",
+    "nom": "Bogotá D.C.",
+    "capitale": "Bogotá",
+    "region": "Andina"
+  }
+]
