@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import mapSvg from '../../assets/colombia-departamentos.svg'
 import departments from '../../data/departments.json'
 
@@ -12,7 +12,7 @@ const getRandomDepartment = (statusMap) => {
 
 function MapMode({ onBack }) {
   const [statusMap, setStatusMap] = useState({})
-  const [current, setCurrent] = useState(getRandomDepartment(statusMap))
+  const [current, setCurrent] = useState(null)
   const [answer, setAnswer] = useState({ department: '', capital: '' })
   const [feedback, setFeedback] = useState(null)
 
@@ -34,7 +34,8 @@ function MapMode({ onBack }) {
     if (correctDepartment && correctCapital) newStatus = 'green'
     else if (correctDepartment || correctCapital) newStatus = 'yellow'
 
-    setStatusMap((prev) => ({ ...prev, [current.id]: newStatus }))
+    const updatedStatus = { ...statusMap, [current.id]: newStatus }
+    setStatusMap(updatedStatus)
     setFeedback({
       status: newStatus,
       correctDepartment: current.nom,
@@ -43,7 +44,7 @@ function MapMode({ onBack }) {
     setAnswer({ department: '', capital: '' })
 
     setTimeout(() => {
-      const next = getRandomDepartment({ ...statusMap, [current.id]: newStatus })
+      const next = getRandomDepartment(updatedStatus)
       setCurrent(next)
       setFeedback(null)
     }, 1200)
@@ -56,6 +57,12 @@ function MapMode({ onBack }) {
     if (state === 'red') return '#fca5a533'
     return '#ffffff'
   }
+
+  useEffect(() => {
+    if (!current) {
+      setCurrent(getRandomDepartment(statusMap))
+    }
+  }, [current, statusMap])
 
   return (
     <div className="app">
@@ -70,6 +77,12 @@ function MapMode({ onBack }) {
           <div>Validés : {score} / 32</div>
         </div>
 
+        {current && (
+          <div className="current-department-label">
+            Département actuellement sélectionné : <strong>{current.nom}</strong>
+          </div>
+        )}
+
         <div className="svg-wrapper">
           <img
             className="map-svg"
@@ -79,18 +92,23 @@ function MapMode({ onBack }) {
         </div>
 
         <div className="map-grid">
-          {departments.slice(0, 8).map((dept) => (
-            <div
+          {departments.map((dept) => (
+            <button
+              type="button"
               key={dept.id}
-              className="map-cell"
-              style={{ background: getFillColor(dept.id) }}
+              className={`map-cell ${current?.id === dept.id ? 'selected' : ''}`}
+              style={{
+                background: current?.id === dept.id ? '#bfdbfe' : getFillColor(dept.id),
+                borderColor: current?.id === dept.id ? '#2563eb' : undefined,
+              }}
+              onClick={() => setCurrent(dept)}
             >
               {dept.nom}
-            </div>
+            </button>
           ))}
         </div>
 
-        {current && (
+        {current ? (
           <form className="form-grid" onSubmit={handleSubmit}>
             <label>
               Département
@@ -114,6 +132,10 @@ function MapMode({ onBack }) {
               Valider
             </button>
           </form>
+        ) : (
+          <div className="info-box">
+            Choisis un département dans la liste ci-dessous pour commencer.
+          </div>
         )}
 
         {feedback && (
