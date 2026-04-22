@@ -16,6 +16,24 @@ const getCoordinates = (geometry) => {
   return []
 }
 
+const tinyIslandTransform = {
+  sanandresyprovidencia: {
+    size: 10,
+    offsetX: 110,
+    offsetY: 50,
+  },
+}
+
+const flattenPoints = (coords, result = []) => {
+  if (!Array.isArray(coords)) return result
+  if (coords.length === 2 && typeof coords[0] === 'number') {
+    result.push(coords)
+  } else {
+    coords.forEach((item) => flattenPoints(item, result))
+  }
+  return result
+}
+
 const getGeoBounds = (features) => {
   let minX = Infinity
   let minY = Infinity
@@ -37,13 +55,19 @@ const getGeoBounds = (features) => {
   return { minX, minY, maxX, maxY }
 }
 
-const buildPath = (geometry, project) =>
+const buildPath = (geometry, project, polygonTransforms) =>
   getCoordinates(geometry)
-    .map((polygon) =>
+    .map((polygon, polygonIndex) =>
       polygon
         .map((ring) =>
           ring
-            .map(([x, y], index) => `${index === 0 ? 'M' : 'L'} ${project(x, y)}`)
+            .map(([x, y], index) => {
+              const [px, py] = project(x, y).split(' ').map(Number)
+              const [tx, ty] = polygonTransforms
+                ? polygonTransforms[polygonIndex](px, py)
+                : [px, py]
+              return `${index === 0 ? 'M' : 'L'} ${tx.toFixed(2)} ${ty.toFixed(2)}`
+            })
             .join(' ') + ' Z',
         )
         .join(' '),
@@ -67,6 +91,21 @@ const getRandomDepartment = (statusMap) => {
   )
   if (remaining.length === 0) return null
   return remaining[Math.floor(Math.random() * remaining.length)]
+}
+
+const getProjectedCentroid = (geometry, projector) => {
+  const points = flattenPoints(geometry)
+  const projected = points.map(([x, y]) => {
+    const [px, py] = projector(x, y).split(' ').map(Number)
+    return { x: px, y: py }
+  })
+  const centroid = projected.reduce(
+    (acc, point) => ({ x: acc.x + point.x, y: acc.y + point.y }),
+    { x: 0, y: 0 },
+  )
+  return projected.length
+    ? { x: centroid.x / projected.length, y: centroid.y / projected.length }
+    : { x: 0, y: 0 }
 }
 
 function MapMode({ onBack }) {
@@ -101,13 +140,40 @@ function MapMode({ onBack }) {
   const mapFeatures = useMemo(() => {
     const bounds = getGeoBounds(colombiaGeo.features)
     const projector = makeProjector(bounds, 920, 700)
-    return colombiaGeo.features.map((feature) => ({
-      ...feature,
-      path: buildPath(feature.geometry, projector),
-      deptId: departments.find(
-        (dept) => normalize(dept.nom) === normalize(feature.properties.name),
-      )?.id,
-    }))
+    return colombiaGeo.features.map((feature) => {
+      const normalizedName = normalize(feature.properties.name)
+      const override = tinyIslandTransform[normalizedName]
+      const polygonList = getCoordinates(feature.geometry)
+      const polygonTransforms = override
+        ? polygonList.map((polygon) => {
+            const polygonPoints = flattenPoints(polygon)
+            const projectedPolygon = polygonPoints.map(([x, y]) => {
+              const [px, py] = projector(x, y).split(' ').map(Number)
+              return { x: px, y: py }
+            })
+            const centroid = projectedPolygon.reduce(
+              (acc, point) => ({ x: acc.x + point.x, y: acc.y + point.y }),
+              { x: 0, y: 0 },
+            )
+            const center = projectedPolygon.length
+              ? { x: centroid.x / projectedPolygon.length, y: centroid.y / projectedPolygon.length }
+              : { x: 0, y: 0 }
+            const dx = override.offsetX ?? 0
+            const dy = override.offsetY ?? 0
+            return (px, py) => [
+              center.x + (px - center.x) * override.size + dx,
+              center.y + (py - center.y) * override.size + dy,
+            ]
+          })
+        : null
+      return {
+        ...feature,
+        path: buildPath(feature.geometry, projector, polygonTransforms),
+        deptId: departments.find(
+          (dept) => normalize(dept.nom) === normalizedName,
+        )?.id,
+      }
+    })
   }, [])
 
   const handleSubmit = (event) => {
@@ -129,12 +195,13 @@ function MapMode({ onBack }) {
       correctCapital: current.capitale,
     })
     setAnswer({ department: '', capital: '' })
+  }
 
-    setTimeout(() => {
-      const next = getRandomDepartment(updatedStatus)
-      setCurrent(next)
-      setFeedback(null)
-    }, 1200)
+  const goNextQuestion = () => {
+    const next = getRandomDepartment(statusMap)
+    setCurrent(next)
+    setFeedback(null)
+    setAnswer({ department: '', capital: '' })
   }
 
   const getFillColor = (deptId, isSelected = false) => {
@@ -220,6 +287,12 @@ function MapMode({ onBack }) {
             </button>
           </form>
         ) : null}
+
+        {feedback && (
+          <button type="button" className="button secondary" onClick={goNextQuestion}>
+            Question suivante
+          </button>
+        )}
 
         {feedback && (
           <div className={`feedback ${feedback.status}`}>
