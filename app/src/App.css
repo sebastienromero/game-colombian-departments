@@ -431,10 +431,12 @@
 .svg-wrapper {
   margin: 20px 0;
   text-align: center;
+  overflow-x: auto;
 }
 
 .map-svg {
-  max-width: 100%;
+  width: 150%;
+  max-width: none;
   height: auto;
   border-radius: 18px;
   border: 1px solid #e5e7eb;

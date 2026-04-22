@@ -1,6 +1,65 @@
 import { useEffect, useMemo, useState } from 'react'
-import mapSvg from '../../assets/colombia-departamentos.svg'
 import departments from '../../data/departments.json'
+import colombiaGeo from '../../data/colombian-departments.json'
+
+const normalize = (value) =>
+  value
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '')
+
+const getCoordinates = (geometry) => {
+  if (!geometry) return []
+  if (geometry.type === 'Polygon') return [geometry.coordinates]
+  if (geometry.type === 'MultiPolygon') return geometry.coordinates
+  return []
+}
+
+const getGeoBounds = (features) => {
+  let minX = Infinity
+  let minY = Infinity
+  let maxX = -Infinity
+  let maxY = -Infinity
+  const visit = (coords) => {
+    if (!Array.isArray(coords)) return
+    if (coords.length === 2 && typeof coords[0] === 'number') {
+      const [x, y] = coords
+      minX = Math.min(minX, x)
+      minY = Math.min(minY, y)
+      maxX = Math.max(maxX, x)
+      maxY = Math.max(maxY, y)
+      return
+    }
+    coords.forEach(visit)
+  }
+  features.forEach((feature) => visit(feature.geometry?.coordinates))
+  return { minX, minY, maxX, maxY }
+}
+
+const buildPath = (geometry, project) =>
+  getCoordinates(geometry)
+    .map((polygon) =>
+      polygon
+        .map((ring) =>
+          ring
+            .map(([x, y], index) => `${index === 0 ? 'M' : 'L'} ${project(x, y)}`)
+            .join(' ') + ' Z',
+        )
+        .join(' '),
+    )
+    .join(' ')
+
+const makeProjector = (bounds, width, height, margin = 20) => {
+  const worldWidth = bounds.maxX - bounds.minX
+  const worldHeight = bounds.maxY - bounds.minY
+  const scale = Math.min((width - margin * 2) / worldWidth, (height - margin * 2) / worldHeight)
+  return (x, y) => {
+    const px = (x - bounds.minX) * scale + margin
+    const py = (bounds.maxY - y) * scale + margin
+    return `${px.toFixed(2)} ${py.toFixed(2)}`
+  }
+}
 
 const getRandomDepartment = (statusMap) => {
   const remaining = departments.filter(
@@ -22,6 +81,34 @@ function MapMode({ onBack }) {
   )
 
   const currentState = current ? statusMap[current.id] : null
+
+  const featureByDeptId = useMemo(() => {
+    const map = {}
+    const deptByName = departments.reduce((acc, dept) => {
+      acc[normalize(dept.nom)] = dept.id
+      return acc
+    }, {})
+    colombiaGeo.features.forEach((feature) => {
+      const id = normalize(feature.properties.name)
+      const deptId = deptByName[id]
+      if (deptId) {
+        map[deptId] = feature
+      }
+    })
+    return map
+  }, [])
+
+  const mapFeatures = useMemo(() => {
+    const bounds = getGeoBounds(colombiaGeo.features)
+    const projector = makeProjector(bounds, 920, 700)
+    return colombiaGeo.features.map((feature) => ({
+      ...feature,
+      path: buildPath(feature.geometry, projector),
+      deptId: departments.find(
+        (dept) => normalize(dept.nom) === normalize(feature.properties.name),
+      )?.id,
+    }))
+  }, [])
 
   const handleSubmit = (event) => {
     event.preventDefault()
@@ -50,8 +137,9 @@ function MapMode({ onBack }) {
     }, 1200)
   }
 
-  const getFillColor = (deptId) => {
+  const getFillColor = (deptId, isSelected = false) => {
     const state = statusMap[deptId]
+    if (isSelected) return '#bfdbfe88'
     if (state === 'green') return '#16a34a33'
     if (state === 'yellow') return '#facc1533'
     if (state === 'red') return '#fca5a533'
@@ -84,28 +172,27 @@ function MapMode({ onBack }) {
         )}
 
         <div className="svg-wrapper">
-          <img
-            className="map-svg"
-            src={mapSvg}
-            alt="Carte des départements de Colombie"
-          />
-        </div>
-
-        <div className="map-grid">
-          {departments.map((dept) => (
-            <button
-              type="button"
-              key={dept.id}
-              className={`map-cell ${current?.id === dept.id ? 'selected' : ''}`}
-              style={{
-                background: current?.id === dept.id ? '#bfdbfe' : getFillColor(dept.id),
-                borderColor: current?.id === dept.id ? '#2563eb' : undefined,
-              }}
-              onClick={() => setCurrent(dept)}
-            >
-              {dept.nom}
-            </button>
-          ))}
+          <svg className="map-svg" viewBox="0 0 920 700" aria-label="Carte des départements de Colombie">
+            {mapFeatures.map((feature) => {
+              const deptId = feature.deptId
+              return (
+                <path
+                  key={feature.properties.id}
+                  d={feature.path}
+                  fill={deptId ? getFillColor(deptId, current?.id === deptId) : '#f8fafc'}
+                  stroke={current?.id === deptId ? '#2563eb' : '#475569'}
+                  strokeWidth={current?.id === deptId ? 2 : 0.6}
+                  opacity={0.95}
+                  onClick={() => {
+                    if (deptId) {
+                      const selected = departments.find((dept) => dept.id === deptId)
+                      setCurrent(selected)
+                    }
+                  }}
+                />
+              )
+            })}
+          </svg>
         </div>
 
         {current ? (
@@ -132,11 +219,7 @@ function MapMode({ onBack }) {
               Valider
             </button>
           </form>
-        ) : (
-          <div className="info-box">
-            Choisis un département dans la liste ci-dessous pour commencer.
-          </div>
-        )}
+        ) : null}
 
         {feedback && (
           <div className={`feedback ${feedback.status}`}>
