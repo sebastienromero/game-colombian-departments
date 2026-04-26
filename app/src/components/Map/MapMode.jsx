@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import departments from '../../data/departments.json'
 import colombiaGeo from '../../data/colombian-departments.json'
 
@@ -78,19 +78,27 @@ const makeProjector = (bounds, width, height, margin = 20) => {
   const worldWidth = bounds.maxX - bounds.minX
   const worldHeight = bounds.maxY - bounds.minY
   const scale = Math.min((width - margin * 2) / worldWidth, (height - margin * 2) / worldHeight)
+  const extraX = (width - margin * 2 - worldWidth * scale) / 2
+  const extraY = (height - margin * 2 - worldHeight * scale) / 2
   return (x, y) => {
     const px = (x - bounds.minX) * scale + margin
     const py = (bounds.maxY - y) * scale + margin
-    return `${px.toFixed(2)} ${py.toFixed(2)}`
+    return `${(px + extraX).toFixed(2)} ${(py + extraY).toFixed(2)}`
   }
 }
 
 const getRandomDepartment = (statusMap) => {
-  const remaining = departments.filter(
-    (dept) => statusMap[dept.id] !== 'green',
-  )
-  if (remaining.length === 0) return null
-  return remaining[Math.floor(Math.random() * remaining.length)]
+  const unanswered = departments.filter((dept) => !statusMap[dept.id])
+  if (unanswered.length > 0) {
+    return unanswered[Math.floor(Math.random() * unanswered.length)]
+  }
+
+  const toRetry = departments.filter((dept) => statusMap[dept.id] === 'yellow')
+  if (toRetry.length > 0) {
+    return toRetry[Math.floor(Math.random() * toRetry.length)]
+  }
+
+  return null
 }
 
 const getProjectedCentroid = (geometry, projector) => {
@@ -113,6 +121,7 @@ function MapMode({ onBack }) {
   const [current, setCurrent] = useState(null)
   const [answer, setAnswer] = useState({ department: '', capital: '' })
   const [feedback, setFeedback] = useState(null)
+  const departmentInputRef = useRef(null)
 
   const score = useMemo(
     () => Object.values(statusMap).filter((value) => value === 'green').length,
@@ -183,9 +192,9 @@ function MapMode({ onBack }) {
     const correctDepartment = answer.department === current.nom
     const correctCapital = answer.capital === current.capitale
 
-    let newStatus = 'red'
+    let newStatus = 'yellow'
     if (correctDepartment && correctCapital) newStatus = 'green'
-    else if (correctDepartment || correctCapital) newStatus = 'yellow'
+    // any wrong answer becomes yellow so the department returns later
 
     const updatedStatus = { ...statusMap, [current.id]: newStatus }
     setStatusMap(updatedStatus)
@@ -206,9 +215,9 @@ function MapMode({ onBack }) {
 
   const getFillColor = (deptId, isSelected = false) => {
     const state = statusMap[deptId]
+    if (state === 'green') return '#bbf7d0'
+    if (state === 'yellow') return '#fef3c7'
     if (isSelected) return '#bfdbfe88'
-    if (state === 'green') return '#16a34a33'
-    if (state === 'yellow') return '#facc1533'
     if (state === 'red') return '#fca5a533'
     return '#ffffff'
   }
@@ -217,7 +226,16 @@ function MapMode({ onBack }) {
     if (!current) {
       setCurrent(getRandomDepartment(statusMap))
     }
+    if (current && departmentInputRef.current) {
+      departmentInputRef.current.focus()
+    }
   }, [current, statusMap])
+
+  useEffect(() => {
+    if (departmentInputRef.current) {
+      departmentInputRef.current.focus()
+    }
+  }, [current])
 
   return (
     <div className="app">
@@ -228,87 +246,97 @@ function MapMode({ onBack }) {
 
       <section className="card quiz-card">
         <div className="quiz-top">
-          <div>{current ? `Département aléatoire : ${current.nom}` : 'Tous les départements sont verts !'}</div>
+          <div>{current ? 'Devine le département depuis la carte' : 'Tous les départements sont verts !'}</div>
           <div>Validés : {score} / 32</div>
         </div>
 
-        {current && (
-          <div className="current-department-label">
-            Département actuellement sélectionné : <strong>{current.nom}</strong>
+        <div className="map-mode-grid">
+          <div className="svg-panel">
+            <div className="svg-wrapper">
+              <svg className="map-svg" viewBox="0 0 920 700" aria-label="Carte des départements de Colombie">
+                {mapFeatures.map((feature) => {
+                  const deptId = feature.deptId
+                  return (
+                    <path
+                      key={feature.properties.id}
+                      d={feature.path}
+                      fill={deptId ? getFillColor(deptId, current?.id === deptId) : '#f8fafc'}
+                      stroke={current?.id === deptId ? '#2563eb' : '#475569'}
+                      strokeWidth={current?.id === deptId ? 2 : 0.6}
+                      opacity={0.95}
+                      onClick={() => {
+                        if (deptId) {
+                          const selected = departments.find((dept) => dept.id === deptId)
+                          setCurrent(selected)
+                        }
+                      }}
+                    />
+                  )
+                })}
+              </svg>
+            </div>
           </div>
-        )}
 
-        <div className="svg-wrapper">
-          <svg className="map-svg" viewBox="0 0 920 700" aria-label="Carte des départements de Colombie">
-            {mapFeatures.map((feature) => {
-              const deptId = feature.deptId
-              return (
-                <path
-                  key={feature.properties.id}
-                  d={feature.path}
-                  fill={deptId ? getFillColor(deptId, current?.id === deptId) : '#f8fafc'}
-                  stroke={current?.id === deptId ? '#2563eb' : '#475569'}
-                  strokeWidth={current?.id === deptId ? 2 : 0.6}
-                  opacity={0.95}
-                  onClick={() => {
-                    if (deptId) {
-                      const selected = departments.find((dept) => dept.id === deptId)
-                      setCurrent(selected)
-                    }
-                  }}
-                />
-              )
-            })}
-          </svg>
-        </div>
+          <div className="controls-panel">
+            {current ? (
+              <form
+                className="form-grid"
+                onSubmit={handleSubmit}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && feedback) {
+                    event.preventDefault()
+                    goNextQuestion()
+                  }
+                }}
+              >
+                <label>
+                  Département
+                  <input
+                    ref={departmentInputRef}
+                    value={answer.department}
+                    onChange={(e) => setAnswer({ ...answer, department: e.target.value })}
+                    placeholder="Nom du département"
+                    required
+                  />
+                </label>
+                <label>
+                  Capitale
+                  <input
+                    value={answer.capital}
+                    onChange={(e) => setAnswer({ ...answer, capital: e.target.value })}
+                    placeholder="Nom de la capitale"
+                    required
+                  />
+                </label>
+                <button type="submit" className="button primary">
+                  Valider
+                </button>
+              </form>
+            ) : null}
 
-        {current ? (
-          <form className="form-grid" onSubmit={handleSubmit}>
-            <label>
-              Département
-              <input
-                value={answer.department}
-                onChange={(e) => setAnswer({ ...answer, department: e.target.value })}
-                placeholder="Nom du département"
-                required
-              />
-            </label>
-            <label>
-              Capitale
-              <input
-                value={answer.capital}
-                onChange={(e) => setAnswer({ ...answer, capital: e.target.value })}
-                placeholder="Nom de la capitale"
-                required
-              />
-            </label>
-            <button type="submit" className="button primary">
-              Valider
+            {feedback && (
+              <button type="button" className="button secondary" onClick={goNextQuestion}>
+                Question suivante
+              </button>
+            )}
+
+            {feedback && (
+              <div className={`feedback ${feedback.status}`}>
+                {feedback.status === 'green' && <p>Parfait, les deux réponses sont bonnes.</p>}
+                {feedback.status === 'yellow' && (
+                  <p>Une réponse est bonne. Département : {feedback.correctDepartment}, Capitale : {feedback.correctCapital}.</p>
+                )}
+                {feedback.status === 'red' && (
+                  <p>Mauvaise réponse. Département : {feedback.correctDepartment}, Capitale : {feedback.correctCapital}.</p>
+                )}
+              </div>
+            )}
+
+            <button className="button secondary" onClick={onBack} type="button">
+              Retour au menu
             </button>
-          </form>
-        ) : null}
-
-        {feedback && (
-          <button type="button" className="button secondary" onClick={goNextQuestion}>
-            Question suivante
-          </button>
-        )}
-
-        {feedback && (
-          <div className={`feedback ${feedback.status}`}>
-            {feedback.status === 'green' && <p>Parfait, les deux réponses sont bonnes.</p>}
-            {feedback.status === 'yellow' && (
-              <p>Une réponse est bonne. Département : {feedback.correctDepartment}, Capitale : {feedback.correctCapital}.</p>
-            )}
-            {feedback.status === 'red' && (
-              <p>Mauvaise réponse. Département : {feedback.correctDepartment}, Capitale : {feedback.correctCapital}.</p>
-            )}
           </div>
-        )}
-
-        <button className="button secondary" onClick={onBack} type="button">
-          Retour au menu
-        </button>
+        </div>
       </section>
     </div>
   )

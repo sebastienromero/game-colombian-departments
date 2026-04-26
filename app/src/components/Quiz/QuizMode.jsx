@@ -100,6 +100,17 @@ function QuizMode({ onBack }) {
     setStatus(null)
   }
 
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (selectedOption && event.key === 'Enter') {
+        event.preventDefault()
+        next()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedOption, next])
+
   return (
     <div className="app">
       <header className="header">

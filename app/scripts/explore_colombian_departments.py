@@ -4,27 +4,45 @@ from pathlib import Path
 path = Path("app/src/data/colombian-departments.json")
 data = json.loads(path.read_text(encoding="utf-8"))
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # # c'est un dict
 # print (type(data))
 # print(data.keys())
 
 
-# features est une liste
-features = data["features"]
-# print("nombre de features :", len(features))
-# ROOT = Path(__file__).resolve().parent.parent
-# GEOJSON_PATH = ROOT / "src" / "data" / "colombian-departments.json"
-
-# premier élément
-first = features[0]
-# print(type(first))
-# print(first.keys())
 
 
-# propriétés du premier département
-print(first["properties"])
-# print("nom :", first["properties"]["name"])
-# print("capitale :", first["properties"].get("capital"))
+
+# # features est une liste
+# features = data["features"]
+# # print("nombre de features :", len(features))
+# # ROOT = Path(__file__).resolve().parent.parent
+# # GEOJSON_PATH = ROOT / "src" / "data" / "colombian-departments.json"
+
+# # premier élément
+# first = features[0]
+# # print(type(first))
+# # print(first.keys())
+
+
+# # propriétés du premier département
+# print(first["properties"])
+# # print("nom :", first["properties"]["name"])
+# # print("capitale :", first["properties"].get("capital"))
 
 
 
