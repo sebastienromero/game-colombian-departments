@@ -2,6 +2,7 @@ import { useState } from 'react'
 import './App.css'
 import QuizMode from './components/Quiz/QuizMode.jsx'
 import MapMode from './components/Map/MapMode.jsx'
+import AlphabetMode from './components/AlphabetMode/AlphabetMode.jsx'
 
 function App() {
   const [mode, setMode] = useState(null)
@@ -14,6 +15,10 @@ function App() {
     return <MapMode onBack={() => setMode(null)} />
   }
 
+  if (mode === 'alphabet') {
+    return <AlphabetMode onBack={() => setMode(null)} />
+  }
+
   return (
     <div className="app">
       <header className="header">
@@ -23,11 +28,14 @@ function App() {
 
       <section className="card welcome-card">
         <div className="mode-grid">
-          <button className="mode-button primary" onClick={() => setMode('quiz')}>
+          <button className="mode-button secondary" onClick={() => setMode('quiz')}>
             Mode Quiz
           </button>
           <button className="mode-button secondary" onClick={() => setMode('map')}>
             Mode Carte interactive
+          </button>
+          <button className="mode-button secondary" onClick={() => setMode('alphabet')}>
+            Mode Alphabétique
           </button>
         </div>
       </section>
