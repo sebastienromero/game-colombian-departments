@@ -102,24 +102,9 @@ const getRandomDepartment = (statusMap) => {
   return null
 }
 
-const getProjectedCentroid = (geometry, projector) => {
-  const points = flattenPoints(geometry)
-  const projected = points.map(([x, y]) => {
-    const [px, py] = projector(x, y).split(' ').map(Number)
-    return { x: px, y: py }
-  })
-  const centroid = projected.reduce(
-    (acc, point) => ({ x: acc.x + point.x, y: acc.y + point.y }),
-    { x: 0, y: 0 },
-  )
-  return projected.length
-    ? { x: centroid.x / projected.length, y: centroid.y / projected.length }
-    : { x: 0, y: 0 }
-}
-
 function MapMode({ onBack }) {
   const [statusMap, setStatusMap] = useState({})
-  const [current, setCurrent] = useState(null)
+  const [current, setCurrent] = useState(() => getRandomDepartment({}))
   const [answer, setAnswer] = useState({ department: '', capital: '' })
   const [feedback, setFeedback] = useState(null)
   const departmentInputRef = useRef(null)
@@ -128,24 +113,6 @@ function MapMode({ onBack }) {
     () => Object.values(statusMap).filter((value) => value === 'green').length,
     [statusMap],
   )
-
-  const currentState = current ? statusMap[current.id] : null
-
-  const featureByDeptId = useMemo(() => {
-    const map = {}
-    const deptByName = departments.reduce((acc, dept) => {
-      acc[normalize(dept.nom)] = dept.id
-      return acc
-    }, {})
-    colombiaGeo.features.forEach((feature) => {
-      const id = normalize(feature.properties.name)
-      const deptId = deptByName[id]
-      if (deptId) {
-        map[deptId] = feature
-      }
-    })
-    return map
-  }, [])
 
   const mapFeatures = useMemo(() => {
     const bounds = getGeoBounds(colombiaGeo.features)
@@ -224,65 +191,65 @@ function MapMode({ onBack }) {
   }
 
   useEffect(() => {
-    if (!current) {
-      setCurrent(getRandomDepartment(statusMap))
-    }
     if (current && departmentInputRef.current) {
-      departmentInputRef.current.focus()
-    }
-  }, [current, statusMap])
-
-  useEffect(() => {
-    if (departmentInputRef.current) {
       departmentInputRef.current.focus()
     }
   }, [current])
 
+  useEffect(() => {
+    document.documentElement.classList.add('map-mode-page')
+    return () => document.documentElement.classList.remove('map-mode-page')
+  }, [])
+
   return (
-    <div className="app app--with-back">
-      <BackToMenuButton onBack={onBack} />
-      <header className="header">
-        <h1>Carte interactive</h1>
-        <p>Réponds au département et à la capitale du département sélectionné.</p>
-      </header>
-
-      <section className="card quiz-card">
-        <div className="quiz-top">
-          <div>{current ? 'Devine le département depuis la carte' : 'Tous les départements sont verts !'}</div>
-          <div>Validés : {score} / 32</div>
-        </div>
-
-        <div className="map-mode-grid">
-          <div className="svg-panel map-surface-island">
-            <div className="svg-wrapper">
-              <svg className="map-svg" viewBox="0 0 920 700" aria-label="Carte des départements de Colombie">
-                {mapFeatures.map((feature) => {
-                  const deptId = feature.deptId
-                  return (
-                    <path
-                      key={feature.properties.id}
-                      d={feature.path}
-                      fill={deptId ? getFillColor(deptId, current?.id === deptId) : 'var(--map-water)'}
-                      stroke={current?.id === deptId ? '#2563eb' : '#475569'}
-                      strokeWidth={current?.id === deptId ? 2 : 0.6}
-                      opacity={0.95}
-                      onClick={() => {
-                        if (deptId) {
-                          const selected = departments.find((dept) => dept.id === deptId)
-                          setCurrent(selected)
-                        }
-                      }}
-                    />
-                  )
-                })}
-              </svg>
+    <div className="map-mode-app">
+      <div className="map-mode-split">
+        <div className="map-mode-top">
+          <div className="map-mode-top-row">
+            <BackToMenuButton onBack={onBack} variant="embedded" />
+            <div className="map-mode-map-column">
+              <div className="map-mode-score" aria-live="polite">
+                Validés : {score} / 32
+              </div>
+              <div className="svg-panel map-surface-island map-mode-svg-frame">
+                <div className="svg-wrapper">
+                  <svg
+                    className="map-svg"
+                    viewBox="0 0 920 700"
+                    preserveAspectRatio="xMidYMid meet"
+                    aria-label="Carte des départements de Colombie"
+                  >
+                    {mapFeatures.map((feature) => {
+                      const deptId = feature.deptId
+                      return (
+                        <path
+                          key={feature.properties.id}
+                          d={feature.path}
+                          fill={deptId ? getFillColor(deptId, current?.id === deptId) : 'var(--map-water)'}
+                          stroke={current?.id === deptId ? '#2563eb' : '#475569'}
+                          strokeWidth={current?.id === deptId ? 2 : 0.6}
+                          opacity={0.95}
+                          onClick={() => {
+                            if (deptId) {
+                              const selected = departments.find((dept) => dept.id === deptId)
+                              setCurrent(selected)
+                            }
+                          }}
+                        />
+                      )
+                    })}
+                  </svg>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div className="controls-panel">
-            {current ? (
+        <div className="map-mode-bottom">
+          {current ? (
+            <>
               <form
-                className="form-grid"
+                className="form-grid map-mode-form"
                 onSubmit={handleSubmit}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' && feedback) {
@@ -291,51 +258,57 @@ function MapMode({ onBack }) {
                   }
                 }}
               >
-                <label>
-                  Département
-                  <input
-                    ref={departmentInputRef}
-                    value={answer.department}
-                    onChange={(e) => setAnswer({ ...answer, department: e.target.value })}
-                    placeholder="Nom du département"
-                    required
-                  />
-                </label>
-                <label>
-                  Capitale
-                  <input
-                    value={answer.capital}
-                    onChange={(e) => setAnswer({ ...answer, capital: e.target.value })}
-                    placeholder="Nom de la capitale"
-                    required
-                  />
-                </label>
-                <button type="submit" className="button primary">
+                <input
+                  ref={departmentInputRef}
+                  aria-label="Nom du département"
+                  value={answer.department}
+                  onChange={(e) => setAnswer({ ...answer, department: e.target.value })}
+                  placeholder="Nom du département, avec l'orthographe."
+                  autoComplete="off"
+                  required
+                />
+                <input
+                  aria-label="Nom de la capitale"
+                  value={answer.capital}
+                  onChange={(e) => setAnswer({ ...answer, capital: e.target.value })}
+                  placeholder="Nom de la capitale, avec l'orthographe."
+                  autoComplete="off"
+                  required
+                />
+                <button type="submit" className="button validate">
                   Valider
                 </button>
               </form>
-            ) : null}
 
-            {feedback && (
-              <button type="button" className="button secondary" onClick={goNextQuestion}>
-                Question suivante
-              </button>
-            )}
+              {feedback && (
+                <button type="button" className="button secondary" onClick={goNextQuestion}>
+                  Question suivante
+                </button>
+              )}
 
-            {feedback && (
-              <div className={`feedback ${feedback.status}`}>
-                {feedback.status === 'green' && <p>Parfait, les deux réponses sont bonnes.</p>}
-                {feedback.status === 'yellow' && (
-                  <p>Une réponse est bonne. Département : {feedback.correctDepartment}, Capitale : {feedback.correctCapital}.</p>
-                )}
-                {feedback.status === 'red' && (
-                  <p>Mauvaise réponse. Département : {feedback.correctDepartment}, Capitale : {feedback.correctCapital}.</p>
-                )}
-              </div>
-            )}
-          </div>
+              {feedback && (
+                <div className={`feedback ${feedback.status}`}>
+                  {feedback.status === 'green' && <p>Parfait, les deux réponses sont bonnes.</p>}
+                  {feedback.status === 'yellow' && (
+                    <p>
+                      Une réponse est bonne. Département : {feedback.correctDepartment}, Capitale :{' '}
+                      {feedback.correctCapital}.
+                    </p>
+                  )}
+                  {feedback.status === 'red' && (
+                    <p>
+                      Mauvaise réponse. Département : {feedback.correctDepartment}, Capitale :{' '}
+                      {feedback.correctCapital}.
+                    </p>
+                  )}
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="map-mode-finished">Tous les départements sont verts !</p>
+          )}
         </div>
-      </section>
+      </div>
     </div>
   )
 }

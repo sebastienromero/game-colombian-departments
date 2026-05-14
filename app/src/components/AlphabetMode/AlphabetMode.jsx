@@ -195,7 +195,7 @@ function AlphabetMode({ onBack }) {
                   disabled={!!feedback}
                 />
               </label>
-              <button className="button primary" type="submit" disabled={!!feedback}>
+              <button className="button validate" type="submit" disabled={!!feedback}>
                 Valider
               </button>
             </form>

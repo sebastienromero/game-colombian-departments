@@ -40,19 +40,18 @@ function QuizMode({ onBack }) {
   const [selectedOption, setSelectedOption] = useState(null)
   const [status, setStatus] = useState(null)
   const [score, setScore] = useState(0)
-  const [history, setHistory] = useState([])
-  const timeoutRef = useRef(null)
-
-  useEffect(() => {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return
+  const [history, setHistory] = useState(() => {
     try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (!raw) return []
       const data = JSON.parse(raw)
-      if (Array.isArray(data)) setHistory(data)
+      return Array.isArray(data) ? data : []
     } catch (error) {
       console.error('Impossible de lire l’historique', error)
+      return []
     }
-  }, [])
+  })
+  const timeoutRef = useRef(null)
 
   useEffect(() => {
     return () => {
