@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import departments from '../../data/departments.json'
+import BackToMenuButton from '../BackToMenuButton.jsx'
 
 const shuffle = (items) => [...items].sort(() => Math.random() - 0.5)
 
@@ -112,7 +113,8 @@ function QuizMode({ onBack }) {
   }, [selectedOption, next])
 
   return (
-    <div className="app">
+    <div className="app app--with-back">
+      <BackToMenuButton onBack={onBack} />
       <header className="header">
         <h1>Quiz des départements colombiens</h1>
         <p>Testez vos connaissances sur les départements de Colombie et leurs capitales.</p>
@@ -124,9 +126,6 @@ function QuizMode({ onBack }) {
           <p>Commencez un quiz de 32 questions, puis améliorez votre score.</p>
           <button className="button primary" onClick={startQuiz}>
             Démarrer le quiz
-          </button>
-          <button className="button secondary" onClick={onBack}>
-            Retour au menu
           </button>
           {bestScore !== null && (
             <div className="stats-card">
@@ -185,9 +184,6 @@ function QuizMode({ onBack }) {
           <p>{score === 32 ? 'Félicitations, 32/32 !' : 'Tu peux encore t’améliorer.'}</p>
           <button className="button primary" onClick={startQuiz}>
             Rejouer
-          </button>
-          <button className="button secondary" onClick={onBack}>
-            Retour au menu
           </button>
           <div className="stats-card">
             <p>Meilleur score : <strong>{bestScore} / 32</strong></p>

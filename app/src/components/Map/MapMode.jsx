@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import departments from '../../data/departments.json'
 import colombiaGeo from '../../data/colombian-departments.json'
+import BackToMenuButton from '../BackToMenuButton.jsx'
 
 const normalize = (value) =>
   value
@@ -219,7 +220,7 @@ function MapMode({ onBack }) {
     if (state === 'yellow') return '#fef3c7'
     if (isSelected) return '#bfdbfe88'
     if (state === 'red') return '#fca5a533'
-    return '#ffffff'
+    return 'var(--map-dept-neutral)'
   }
 
   useEffect(() => {
@@ -238,7 +239,8 @@ function MapMode({ onBack }) {
   }, [current])
 
   return (
-    <div className="app">
+    <div className="app app--with-back">
+      <BackToMenuButton onBack={onBack} />
       <header className="header">
         <h1>Carte interactive</h1>
         <p>Réponds au département et à la capitale du département sélectionné.</p>
@@ -251,7 +253,7 @@ function MapMode({ onBack }) {
         </div>
 
         <div className="map-mode-grid">
-          <div className="svg-panel">
+          <div className="svg-panel map-surface-island">
             <div className="svg-wrapper">
               <svg className="map-svg" viewBox="0 0 920 700" aria-label="Carte des départements de Colombie">
                 {mapFeatures.map((feature) => {
@@ -260,7 +262,7 @@ function MapMode({ onBack }) {
                     <path
                       key={feature.properties.id}
                       d={feature.path}
-                      fill={deptId ? getFillColor(deptId, current?.id === deptId) : '#f8fafc'}
+                      fill={deptId ? getFillColor(deptId, current?.id === deptId) : 'var(--map-water)'}
                       stroke={current?.id === deptId ? '#2563eb' : '#475569'}
                       strokeWidth={current?.id === deptId ? 2 : 0.6}
                       opacity={0.95}
@@ -331,10 +333,6 @@ function MapMode({ onBack }) {
                 )}
               </div>
             )}
-
-            <button className="button secondary" onClick={onBack} type="button">
-              Retour au menu
-            </button>
           </div>
         </div>
       </section>

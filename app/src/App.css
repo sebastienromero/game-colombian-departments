@@ -190,10 +190,12 @@
   font-family: Inter, system-ui, sans-serif;
   color: #111827;
   background: #f8fafc;
+}
 
-  @media (prefers-color-scheme: dark) {
-    background: #0f172a;
+@media (prefers-color-scheme: dark) {
+  .app {
     color: #f8fafc;
+    background: #0f172a;
   }
 }
 
@@ -212,6 +214,12 @@
   line-height: 1.6;
 }
 
+@media (prefers-color-scheme: dark) {
+  .header p {
+    color: #94a3b8;
+  }
+}
+
 .card {
   background: #ffffff;
   color: #111827;
@@ -220,11 +228,14 @@
   box-shadow: 0 18px 45px rgba(15, 23, 42, 0.05);
   padding: 24px;
   margin-bottom: 24px;
+}
 
-  @media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: dark) {
+  .card {
     background: #111827;
-    border-color: #1f2937;
     color: #f8fafc;
+    border-color: #1f2937;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
   }
 }
 
@@ -257,8 +268,11 @@
 .button.secondary {
   background: #f3f4f6;
   color: #111827;
+}
 
-  @media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: dark) {
+  .secondary,
+  .button.secondary {
     background: #1f2937;
     color: #f8fafc;
   }
@@ -270,8 +284,11 @@
   border: 1px solid #e2e8f0;
   border-radius: 14px;
   padding: 16px;
+}
 
-  @media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: dark) {
+  .stats-card,
+  .history-box {
     background: #0f172a;
     border-color: #1f2937;
   }
@@ -309,10 +326,12 @@
   font-size: 1rem;
   cursor: pointer;
   transition: border-color 0.2s ease, background-color 0.2s ease;
+}
 
-  @media (prefers-color-scheme: dark) {
-    background: #111827;
+@media (prefers-color-scheme: dark) {
+  .option {
     border-color: #334155;
+    background: #111827;
     color: #f8fafc;
   }
 }
@@ -413,6 +432,14 @@
   }
 }
 
+@media (prefers-color-scheme: dark) {
+  .map-cell {
+    border-color: #334155;
+    color: #f8fafc;
+    background: #111827;
+  }
+}
+
 .map-cell:hover,
 .map-cell.selected {
   transform: translateY(-1px);
@@ -426,6 +453,14 @@
   border-radius: 16px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
+  color: inherit;
+}
+
+@media (prefers-color-scheme: dark) {
+  .info-box {
+    background: #0f172a;
+    border-color: #1f2937;
+  }
 }
 
 .svg-wrapper {
@@ -442,7 +477,17 @@
   max-height: 560px;
   height: auto;
   border-radius: 18px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #334155;
+  --map-dept-neutral: #e2e8f0;
+  --map-water: #ffffff;
+}
+
+@media (prefers-color-scheme: light) {
+  .map-surface-island {
+    background: #111827;
+    border-radius: 16px;
+    padding: 10px;
+  }
 }
 
 .map-mode-grid {
@@ -527,6 +572,49 @@
   border: 1px solid #d1d5db;
   border-radius: 14px;
   font-size: 1rem;
+  background: #ffffff;
+  color: #111827;
+}
+
+@media (prefers-color-scheme: dark) {
+  .form-grid input {
+    border-color: #334155;
+    background: #111827;
+    color: #f8fafc;
+  }
+}
+
+.expert-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+  gap: 20px;
+  align-items: start;
+}
+
+.expert-departments {
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.expert-departments-title {
+  margin: 0 0 10px 0;
+  font-weight: 700;
+}
+
+.expert-departments ol {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 6px;
+}
+
+.expert-departments li.current {
+  font-weight: 700;
+  color: #1d4ed8;
 }
 
 .feedback.green {
@@ -557,4 +645,57 @@
   border: none;
   color: inherit;
   margin-bottom: 8px;
+}
+
+@media (max-width: 900px) {
+  .expert-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Bouton retour menu (tous les modes sauf accueil) */
+.app--with-back {
+  padding-top: 56px;
+}
+
+.back-to-menu {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 30;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #111827;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+}
+
+@media (prefers-color-scheme: dark) {
+  .back-to-menu {
+    border-color: #334155;
+    background: #1e293b;
+    color: #f8fafc;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  }
+}
+
+.back-to-menu:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.back-to-menu--embedded {
+  position: relative;
+  top: auto;
+  left: auto;
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 4px;
 }
