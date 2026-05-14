@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import departments from '../../data/departments.json'
 import colombiaGeo from '../../data/colombian-departments.json'
 import BackToMenuButton from '../BackToMenuButton.jsx'
@@ -107,7 +107,6 @@ function MapMode({ onBack }) {
   const [current, setCurrent] = useState(() => getRandomDepartment({}))
   const [answer, setAnswer] = useState({ department: '', capital: '' })
   const [feedback, setFeedback] = useState(null)
-  const departmentInputRef = useRef(null)
 
   const score = useMemo(
     () => Object.values(statusMap).filter((value) => value === 'green').length,
@@ -157,12 +156,13 @@ function MapMode({ onBack }) {
     event.preventDefault()
     if (!current) return
 
-    const correctDepartment = answer.department === current.nom
-    const correctCapital = answer.capital === current.capitale
+    const dept = answer.department.trim()
+    const cap = answer.capital.trim()
+    const correctDepartment = dept === current.nom
+    const correctCapital = cap === current.capitale
 
     let newStatus = 'yellow'
     if (correctDepartment && correctCapital) newStatus = 'green'
-    // any wrong answer becomes yellow so the department returns later
 
     const updatedStatus = { ...statusMap, [current.id]: newStatus }
     setStatusMap(updatedStatus)
@@ -191,12 +191,6 @@ function MapMode({ onBack }) {
   }
 
   useEffect(() => {
-    if (current && departmentInputRef.current) {
-      departmentInputRef.current.focus()
-    }
-  }, [current])
-
-  useEffect(() => {
     document.documentElement.classList.add('map-mode-page')
     return () => document.documentElement.classList.remove('map-mode-page')
   }, [])
@@ -210,7 +204,6 @@ function MapMode({ onBack }) {
               Validés : {score} / 32
             </div>
             <div className="svg-panel map-surface-island map-mode-svg-frame">
-              <BackToMenuButton onBack={onBack} variant="map-overlay" />
               <div className="svg-wrapper">
                 <svg
                   className="map-svg"
@@ -239,67 +232,62 @@ function MapMode({ onBack }) {
                   })}
                 </svg>
               </div>
+              <BackToMenuButton onBack={onBack} variant="map-overlay" />
             </div>
           </div>
         </div>
 
-        <div className="map-mode-bottom">
+        <div
+          className="map-mode-bottom"
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' && feedback) {
+              event.preventDefault()
+              goNextQuestion()
+            }
+          }}
+        >
           {current ? (
             <>
-              <form
-                className="form-grid map-mode-form"
-                onSubmit={handleSubmit}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' && feedback) {
-                    event.preventDefault()
-                    goNextQuestion()
-                  }
-                }}
-              >
-                <input
-                  ref={departmentInputRef}
-                  aria-label="Nom du département"
-                  value={answer.department}
-                  onChange={(e) => setAnswer({ ...answer, department: e.target.value })}
-                  placeholder="Nom du département"
-                  autoComplete="off"
-                  required
-                />
-                <input
-                  aria-label="Nom de la capitale"
-                  value={answer.capital}
-                  onChange={(e) => setAnswer({ ...answer, capital: e.target.value })}
-                  placeholder="Nom de la capitale"
-                  autoComplete="off"
-                  required
-                />
-                <button type="submit" className="button validate">
-                  Valider
-                </button>
-              </form>
-
-              {feedback && (
-                <button type="button" className="button secondary" onClick={goNextQuestion}>
-                  Question suivante
-                </button>
-              )}
-
-              {feedback && (
-                <div className={`feedback ${feedback.status}`}>
-                  {feedback.status === 'green' && <p>Parfait, les deux réponses sont bonnes.</p>}
-                  {feedback.status === 'yellow' && (
-                    <p>
-                      Une réponse est bonne. Département : {feedback.correctDepartment}, Capitale :{' '}
-                      {feedback.correctCapital}.
-                    </p>
-                  )}
-                  {feedback.status === 'red' && (
-                    <p>
-                      Mauvaise réponse. Département : {feedback.correctDepartment}, Capitale :{' '}
-                      {feedback.correctCapital}.
-                    </p>
-                  )}
+              {feedback ? (
+                <div className="map-mode-feedback-stack">
+                  <div className={`feedback ${feedback.status}`}>
+                    {feedback.status === 'green' && (
+                      <p>
+                        <strong>Bravo, c&apos;est correct.</strong> {feedback.correctDepartment} —{' '}
+                        {feedback.correctCapital}.
+                      </p>
+                    )}
+                    {feedback.status === 'yellow' && (
+                      <p>
+                        Réponse incomplète ou partiellement correcte. Bonnes réponses :{' '}
+                        <strong>{feedback.correctDepartment}</strong> — <strong>{feedback.correctCapital}</strong>.
+                      </p>
+                    )}
+                  </div>
+                  <button type="button" className="button secondary" onClick={goNextQuestion}>
+                    Question suivante
+                  </button>
                 </div>
+              ) : (
+                <form className="form-grid map-mode-form" onSubmit={handleSubmit}>
+                  <input
+                    aria-label="Nom du département"
+                    value={answer.department}
+                    onChange={(e) => setAnswer({ ...answer, department: e.target.value })}
+                    placeholder="Nom du département"
+                    autoComplete="off"
+                  />
+                  <input
+                    aria-label="Nom de la capitale"
+                    value={answer.capital}
+                    onChange={(e) => setAnswer({ ...answer, capital: e.target.value })}
+                    placeholder="Nom de la capitale"
+                    autoComplete="off"
+                  />
+                  <button type="submit" className="button validate">
+                    Valider
+                  </button>
+                </form>
               )}
             </>
           ) : (

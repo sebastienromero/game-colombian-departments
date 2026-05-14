@@ -497,7 +497,7 @@
 }
 
 @media (prefers-color-scheme: light) {
-  .map-surface-island {
+  .map-surface-island:not(.map-mode-svg-frame) {
     background: #111827;
     border-radius: 16px;
     padding: 10px;
@@ -735,6 +735,8 @@ html.map-mode-page body,
 html.map-mode-page #root {
   height: 100%;
   overflow: hidden;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 .map-mode-app {
@@ -746,6 +748,9 @@ html.map-mode-page #root {
   box-sizing: border-box;
   background: #f8fafc;
   color: #111827;
+  overflow: hidden;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -762,13 +767,19 @@ html.map-mode-page #root {
   flex-direction: column;
   padding: 10px 12px 12px;
   gap: 10px;
+  overflow: hidden;
+  overflow-x: hidden;
+  min-width: 0;
 }
 
 .map-mode-top {
   flex: 2 1 0;
   min-height: 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  overflow-x: hidden;
 }
 
 .map-mode-map-column {
@@ -780,6 +791,7 @@ html.map-mode-page #root {
   align-items: center;
   gap: 6px;
   width: 100%;
+  overflow-x: hidden;
 }
 
 .map-mode-score {
@@ -792,57 +804,89 @@ html.map-mode-page #root {
 
 .map-mode-svg-frame {
   position: relative;
-  flex: 1;
+  flex: 1 1 0;
   min-height: 0;
   width: 100%;
   max-width: 100%;
+  min-width: 0;
   border-radius: 14px;
+  border: 1px solid #334155;
+  background: #111827;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .map-mode-app .map-mode-svg-frame .svg-wrapper {
-  flex: 1;
+  position: relative;
+  flex: 1 1 0;
   min-height: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-width: 0;
+  width: 100%;
   overflow: hidden;
+  overflow-x: hidden;
 }
 
 .map-mode-app .map-svg {
+  position: absolute;
+  left: 0;
+  top: 0;
   width: 100%;
   height: 100%;
-  max-width: 100%;
+  max-width: none;
   max-height: none;
-  min-height: 0;
-  flex: 1;
+  border: none;
+  border-radius: 0;
+  display: block;
 }
 
 .map-mode-bottom {
   flex: 1 1 0;
   min-height: 0;
-  overflow-y: auto;
+  min-width: 0;
+  overflow: hidden;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
+/* Scroll uniquement pendant le focus dans les champs (pas sur le bouton Valider seul) */
+.map-mode-bottom:has(.map-mode-form input:focus) {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
 .map-mode-form {
   gap: 10px;
+  min-width: 0;
 }
 
 .map-mode-form input {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.map-mode-feedback-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.map-mode-feedback-stack .button {
+  align-self: stretch;
 }
 
 .map-mode-finished {
   margin: 0;
   text-align: center;
   font-weight: 700;
-}
-
-@media (max-width: 520px) {
-  .map-mode-app .map-svg {
-    max-height: none;
-  }
 }
