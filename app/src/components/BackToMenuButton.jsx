@@ -1,8 +1,15 @@
 function BackToMenuButton({ onBack, variant = 'fixed' }) {
+  const className =
+    variant === 'embedded'
+      ? 'back-to-menu back-to-menu--embedded'
+      : variant === 'map-overlay'
+        ? 'back-to-menu back-to-menu--map-overlay'
+        : 'back-to-menu'
+
   return (
     <button
       type="button"
-      className={variant === 'embedded' ? 'back-to-menu back-to-menu--embedded' : 'back-to-menu'}
+      className={className}
       onClick={onBack}
       aria-label="Retour au menu"
     >

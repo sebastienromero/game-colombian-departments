@@ -205,41 +205,39 @@ function MapMode({ onBack }) {
     <div className="map-mode-app">
       <div className="map-mode-split">
         <div className="map-mode-top">
-          <div className="map-mode-top-row">
-            <BackToMenuButton onBack={onBack} variant="embedded" />
-            <div className="map-mode-map-column">
-              <div className="map-mode-score" aria-live="polite">
-                Validés : {score} / 32
-              </div>
-              <div className="svg-panel map-surface-island map-mode-svg-frame">
-                <div className="svg-wrapper">
-                  <svg
-                    className="map-svg"
-                    viewBox="0 0 920 700"
-                    preserveAspectRatio="xMidYMid meet"
-                    aria-label="Carte des départements de Colombie"
-                  >
-                    {mapFeatures.map((feature) => {
-                      const deptId = feature.deptId
-                      return (
-                        <path
-                          key={feature.properties.id}
-                          d={feature.path}
-                          fill={deptId ? getFillColor(deptId, current?.id === deptId) : 'var(--map-water)'}
-                          stroke={current?.id === deptId ? '#2563eb' : '#475569'}
-                          strokeWidth={current?.id === deptId ? 2 : 0.6}
-                          opacity={0.95}
-                          onClick={() => {
-                            if (deptId) {
-                              const selected = departments.find((dept) => dept.id === deptId)
-                              setCurrent(selected)
-                            }
-                          }}
-                        />
-                      )
-                    })}
-                  </svg>
-                </div>
+          <div className="map-mode-map-column">
+            <div className="map-mode-score" aria-live="polite">
+              Validés : {score} / 32
+            </div>
+            <div className="svg-panel map-surface-island map-mode-svg-frame">
+              <BackToMenuButton onBack={onBack} variant="map-overlay" />
+              <div className="svg-wrapper">
+                <svg
+                  className="map-svg"
+                  viewBox="0 0 920 700"
+                  preserveAspectRatio="xMidYMid meet"
+                  aria-label="Carte des départements de Colombie"
+                >
+                  {mapFeatures.map((feature) => {
+                    const deptId = feature.deptId
+                    return (
+                      <path
+                        key={feature.properties.id}
+                        d={feature.path}
+                        fill={deptId ? getFillColor(deptId, current?.id === deptId) : 'var(--map-water)'}
+                        stroke={current?.id === deptId ? '#2563eb' : '#475569'}
+                        strokeWidth={current?.id === deptId ? 2 : 0.6}
+                        opacity={0.95}
+                        onClick={() => {
+                          if (deptId) {
+                            const selected = departments.find((dept) => dept.id === deptId)
+                            setCurrent(selected)
+                          }
+                        }}
+                      />
+                    )
+                  })}
+                </svg>
               </div>
             </div>
           </div>
@@ -263,7 +261,7 @@ function MapMode({ onBack }) {
                   aria-label="Nom du département"
                   value={answer.department}
                   onChange={(e) => setAnswer({ ...answer, department: e.target.value })}
-                  placeholder="Nom du département, avec l'orthographe."
+                  placeholder="Nom du département"
                   autoComplete="off"
                   required
                 />
@@ -271,7 +269,7 @@ function MapMode({ onBack }) {
                   aria-label="Nom de la capitale"
                   value={answer.capital}
                   onChange={(e) => setAnswer({ ...answer, capital: e.target.value })}
-                  placeholder="Nom de la capitale, avec l'orthographe."
+                  placeholder="Nom de la capitale"
                   autoComplete="off"
                   required
                 />
